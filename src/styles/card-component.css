@@ -1,0 +1,219 @@
+/**
+ * Card Component Styles
+ * Custom styles for the Card paragraph type
+ */
+
+/* Base card component */
+.card-component {
+  @apply mb-8 transition-all duration-300;
+}
+
+/* Card inner wrapper */
+.card-inner {
+  @apply h-full flex flex-col;
+}
+
+/* Card image wrapper */
+.card-image-wrapper {
+  @apply relative overflow-hidden;
+  aspect-ratio: 16 / 9;
+}
+
+.card-image-wrapper img {
+  @apply w-full h-full object-cover transition-transform duration-500;
+}
+
+.card-component:hover .card-image-wrapper img {
+  @apply scale-110;
+}
+
+/* Image overlay for gradient cards */
+.card-image-overlay {
+  @apply absolute inset-0 bg-gradient-to-t from-black/60 to-transparent;
+}
+
+.gradient-overlay {
+  @apply absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent;
+}
+
+/* Card content */
+.card-content {
+  @apply p-6 flex-grow flex flex-col;
+}
+
+/* Card header */
+.card-header {
+  @apply mb-4;
+}
+
+.card-title {
+  @apply text-2xl font-bold mb-2 leading-tight;
+}
+
+/* Style variants for title based on card style */
+.card-gradient .card-title {
+  @apply text-white drop-shadow-lg;
+}
+
+.card-bordered .card-title {
+  @apply text-gray-900;
+}
+
+.card-elevated .card-title {
+  @apply text-gray-900;
+}
+
+.card-subtitle {
+  @apply text-sm font-medium text-gray-600 uppercase tracking-wide mb-0;
+}
+
+.card-gradient .card-subtitle {
+  @apply text-white/90;
+}
+
+/* Title decoration */
+.card-title-decoration {
+  @apply mt-3 flex justify-center;
+}
+
+.card-decoration-line {
+  @apply block w-16 h-1 bg-blue-600 rounded-full;
+}
+
+.card-gradient .card-decoration-line {
+  @apply bg-white;
+}
+
+/* Card body */
+.card-body {
+  @apply mb-6 flex-grow;
+}
+
+.card-body p {
+  @apply text-gray-700 leading-relaxed;
+}
+
+.card-gradient .card-body p {
+  @apply text-white/95;
+}
+
+/* Card footer */
+.card-footer {
+  @apply mt-auto pt-4;
+}
+
+/* Card metadata */
+.card-metadata {
+  @apply mt-4 pt-4 border-t border-gray-200;
+}
+
+.card-gradient .card-metadata {
+  @apply border-white/30;
+}
+
+.card-metadata .text-muted {
+  @apply text-gray-500 text-xs;
+}
+
+.card-gradient .card-metadata .text-muted {
+  @apply text-white/70;
+}
+
+/* Style Variants */
+
+/* Default card */
+.card-default {
+  @apply transition-shadow hover:shadow-xl;
+}
+
+/* Bordered card */
+.card-bordered {
+  @apply hover:border-blue-500 hover:shadow-md;
+}
+
+/* Elevated card */
+.card-elevated {
+  @apply hover:shadow-2xl hover:-translate-y-1;
+}
+
+/* Gradient card */
+.card-gradient {
+  @apply relative;
+}
+
+.card-gradient .card-content {
+  @apply relative z-10;
+}
+
+/* Alignment variations */
+.text-center .card-header {
+  text-align: center;
+}
+
+.text-center .card-body {
+  text-align: center;
+}
+
+.text-center .card-footer {
+  @apply flex justify-center;
+}
+
+.text-right .card-header {
+  text-align: right;
+}
+
+.text-right .card-body {
+  text-align: right;
+}
+
+.text-right .card-footer {
+  @apply flex justify-end;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .card-title {
+    @apply text-xl;
+  }
+
+  .card-content {
+    @apply p-4;
+  }
+}
+
+/* Animation for card entrance */
+@keyframes cardEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-component {
+  animation: cardEntrance 0.6s ease-out;
+}
+
+/* Alpine.js interactive states */
+[x-data] .card-component {
+  @apply cursor-pointer;
+}
+
+/* Focus states for accessibility */
+.card-component:focus-within {
+  @apply ring-2 ring-blue-500 ring-offset-2 outline-none;
+}
+
+/* Print styles */
+@media print {
+  .card-component {
+    @apply break-inside-avoid shadow-none border border-gray-300;
+  }
+
+  .card-image-wrapper img {
+    @apply transform-none;
+  }
+}

@@ -1,0 +1,72 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display a single page.
+ */
+#}
+<div class="min-h-screen flex flex-col">
+  {% if page.header %}
+    <header class="bg-white shadow-sm">
+      <div class="container-custom py-4">
+        {{ page.header }}
+      </div>
+    </header>
+  {% endif %}
+
+  {% if page.primary_menu or page.secondary_menu %}
+    <nav class=" bg-red-950 text-white">
+      <div class="container-custom py-3">
+        {% if page.primary_menu %}
+          {{ page.primary_menu }}
+        {% endif %}
+        {% if page.secondary_menu %}
+          {{ page.secondary_menu }}
+        {% endif %}
+      </div>
+    </nav>
+  {% endif %}
+
+  {% if page.breadcrumb %}
+    <div class="bg-gray-100 border-b">
+      <div class="container-custom py-2">
+        {{ page.breadcrumb }}
+      </div>
+    </div>
+  {% endif %}
+
+  <main class="flex-grow">
+    <div class="container-custom py-8">
+      {% if page.help %}
+        <div class="mb-6">
+          {{ page.help }}
+        </div>
+      {% endif %}
+
+      <div class="flex flex-wrap -mx-4">
+        {% if page.sidebar_first %}
+          <aside class="w-full lg:w-1/4 px-4 mb-8 lg:mb-0">
+            {{ page.sidebar_first }}
+          </aside>
+        {% endif %}
+
+        <div class="w-full {{ page.sidebar_first and page.sidebar_second ? 'lg:w-1/2' : (page.sidebar_first or page.sidebar_second ? 'lg:w-3/4' : '') }} px-4">
+          {{ page.content }}
+        </div>
+
+        {% if page.sidebar_second %}
+          <aside class="w-full lg:w-1/4 px-4 mt-8 lg:mt-0">
+            {{ page.sidebar_second }}
+          </aside>
+        {% endif %}
+      </div>
+    </div>
+  </main>
+
+  {% if page.footer %}
+    <footer class="bg-gray-800 text-white mt-auto">
+      <div class="container-custom py-6">
+        {{ page.footer }}
+      </div>
+    </footer>
+  {% endif %}
+</div>

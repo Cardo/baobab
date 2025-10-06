@@ -1,0 +1,20 @@
+global:
+  version: 1.0.0
+  css:
+    theme:
+      dist/css/main.css: {}
+  js:
+    dist/js/main.js: {}
+  dependencies:
+    - core/drupal
+
+card-component:
+  version: 1.0.0
+  css:
+    theme:
+      dist/css/card-component.css: {}
+  js:
+    dist/js/card-component.js: {}
+  dependencies:
+    - baobab_theme/global
+    - core/drupal

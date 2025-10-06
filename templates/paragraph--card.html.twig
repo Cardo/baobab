@@ -1,0 +1,92 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display a Card paragraph.
+ *
+ * Available variables:
+ * - paragraph: Full paragraph entity.
+ *   - id: The paragraph ID.
+ *   - bundle: The type of the paragraph, for example, "image" or "text".
+ * - content: All paragraph items. Use {{ content }} to print them all,
+ *   or print a subset such as {{ content.field_example }}.
+ * - attributes: HTML attributes for the containing element.
+ * - card_classes: Additional classes for styling (added via preprocessing).
+ * - card_style: The style variant selected.
+ * - card_alignment: The content alignment selected.
+ * - processed_data: Custom preprocessed data from theme.
+ *
+ * @see template_preprocess_paragraph()
+ * @see baobab_theme_preprocess_paragraph__card()
+ *
+ * @ingroup themeable
+ */
+#}
+{%
+  set classes = [
+    'paragraph',
+    'paragraph--type--' ~ paragraph.bundle|clean_class,
+    'card-component',
+    card_classes ? card_classes : '',
+    view_mode ? 'paragraph--view-mode--' ~ view_mode|clean_class,
+    not paragraph.isPublished() ? 'paragraph--unpublished'
+  ]
+%}
+
+{% set alignment_class = 'text-' ~ (card_alignment ?: 'left') %}
+
+<div{{ attributes.addClass(classes).setAttribute('data-card-style', card_style) }}>
+  <div class="card-inner {{ alignment_class }}">
+    {% if content.field_card_image|render %}
+      <div class="card-image-wrapper">
+        {{ content.field_card_image }}
+        {% if processed_data.image_overlay %}
+          <div class="card-image-overlay">{{ processed_data.image_overlay }}</div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="card-content">
+      {% if content.field_card_title|render or content.field_card_subtitle|render %}
+        <div class="card-header">
+          {% if content.field_card_title|render %}
+            <h3 class="card-title">
+              {{ content.field_card_title }}
+            </h3>
+          {% endif %}
+
+          {% if content.field_card_subtitle|render %}
+            <p class="card-subtitle">
+              {{ content.field_card_subtitle }}
+            </p>
+          {% endif %}
+
+          {% if processed_data.title_decoration %}
+            <div class="card-title-decoration" aria-hidden="true">
+              {{ processed_data.title_decoration }}
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if content.field_card_description|render %}
+        <div class="card-body">
+          {{ content.field_card_description }}
+        </div>
+      {% endif %}
+
+      {% if content.field_card_cta_link|render %}
+        <div class="card-footer">
+          {{ content.field_card_cta_link }}
+        </div>
+      {% endif %}
+
+      {% if processed_data.metadata %}
+        <div class="card-metadata">
+          <small class="text-muted">
+            {{ processed_data.metadata }}
+          </small>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>

@@ -1,0 +1,230 @@
+<?php
+
+/**
+ * @file
+ * Functions to support theming in the Baobab theme.
+ */
+
+use Drupal\Core\Render\Markup;
+use Drupal\file\Entity\File;
+use Drupal\image\Entity\ImageStyle;
+
+/**
+ * Implements hook_preprocess_HOOK() for paragraph--card.html.twig.
+ */
+function baobab_theme_preprocess_paragraph__card(&$variables) {
+  /** @var \Drupal\paragraphs\Entity\Paragraph $paragraph */
+  $paragraph = $variables['paragraph'];
+
+  // Get field values.
+  $card_style = $paragraph->get('field_card_style')->value ?? 'default';
+  $card_alignment = $paragraph->get('field_card_alignment')->value ?? 'left';
+
+  // Add style and alignment to variables.
+  $variables['card_style'] = $card_style;
+  $variables['card_alignment'] = $card_alignment;
+
+  // Build dynamic CSS classes based on card style.
+  $style_classes = _baobab_theme_get_card_style_classes($card_style);
+  $variables['card_classes'] = implode(' ', $style_classes);
+
+  // Add custom attributes for Alpine.js or JavaScript hooks.
+  $variables['attributes']['data-card-id'] = $paragraph->id();
+  $variables['attributes']['x-data'] = '{ expanded: false }';
+
+  // Process image field for additional data.
+  if ($paragraph->hasField('field_card_image') && !$paragraph->get('field_card_image')->isEmpty()) {
+    $image_field = $paragraph->get('field_card_image')->first();
+    if ($image_field) {
+      $file = File::load($image_field->target_id);
+      if ($file) {
+        // Add image metadata.
+        $variables['processed_data']['image_info'] = [
+          'filename' => $file->getFilename(),
+          'filesize' => format_size($file->getSize()),
+          'mime_type' => $file->getMimeType(),
+        ];
+
+        // Generate responsive image URLs for different breakpoints.
+        $variables['processed_data']['responsive_images'] = _baobab_theme_generate_responsive_images($file);
+      }
+    }
+  }
+
+  // Add a decorative element based on alignment.
+  if ($card_alignment === 'center') {
+    $variables['processed_data']['title_decoration'] = Markup::create('<span class="card-decoration-line"></span>');
+  }
+
+  // Add card metadata (created date, author info, etc.).
+  $variables['processed_data']['metadata'] = _baobab_theme_generate_card_metadata($paragraph);
+
+  // Example: Add custom overlay for gradient style.
+  if ($card_style === 'gradient') {
+    $variables['processed_data']['image_overlay'] = Markup::create('<div class="gradient-overlay"></div>');
+  }
+
+  // Add cache contexts and tags.
+  $variables['#cache']['contexts'][] = 'user';
+  $variables['#cache']['tags'][] = 'paragraph:' . $paragraph->id();
+
+  // Add a custom library for card-specific JavaScript and CSS.
+  $variables['#attached']['library'][] = 'baobab_theme/card-component';
+}
+
+/**
+ * Get CSS classes based on card style.
+ *
+ * @param string $style
+ *   The card style.
+ *
+ * @return array
+ *   Array of CSS classes.
+ */
+function _baobab_theme_get_card_style_classes($style) {
+  $classes_map = [
+    'default' => ['card-default', 'bg-white', 'shadow', 'rounded-lg', 'overflow-hidden'],
+    'bordered' => ['card-bordered', 'border-2', 'border-gray-300', 'rounded-lg', 'overflow-hidden'],
+    'elevated' => ['card-elevated', 'bg-white', 'shadow-2xl', 'rounded-xl', 'transform', 'transition-transform', 'hover:scale-105'],
+    'gradient' => ['card-gradient', 'bg-gradient-to-br', 'from-blue-500', 'to-purple-600', 'text-white', 'rounded-xl', 'overflow-hidden'],
+  ];
+
+  return $classes_map[$style] ?? $classes_map['default'];
+}
+
+/**
+ * Generate responsive image URLs.
+ *
+ * @param \Drupal\file\Entity\File $file
+ *   The file entity.
+ *
+ * @return array
+ *   Array of responsive image URLs.
+ */
+function _baobab_theme_generate_responsive_images(File $file) {
+  $responsive = [];
+
+  $image_styles = ['thumbnail', 'medium', 'large'];
+  foreach ($image_styles as $style_name) {
+    $image_style = ImageStyle::load($style_name);
+    if ($image_style) {
+      $responsive[$style_name] = $image_style->buildUrl($file->getFileUri());
+    }
+  }
+
+  return $responsive;
+}
+
+/**
+ * Generate card metadata string.
+ *
+ * @param \Drupal\paragraphs\Entity\Paragraph $paragraph
+ *   The paragraph entity.
+ *
+ * @return string
+ *   Formatted metadata string.
+ */
+function _baobab_theme_generate_card_metadata($paragraph) {
+  $created = $paragraph->getCreatedTime();
+  $date = \Drupal::service('date.formatter')->format($created, 'custom', 'F j, Y');
+
+  $metadata_parts = [
+    'Created: ' . $date,
+    'ID: ' . $paragraph->id(),
+  ];
+
+  return implode(' | ', $metadata_parts);
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for html.html.twig.
+ */
+function baobab_theme_preprocess_html(&$variables) {
+  // Add body classes for better styling control.
+  $current_path = \Drupal::service('path.current')->getPath();
+  $path_alias = \Drupal::service('path_alias.manager')->getAliasByPath($current_path);
+  $path_alias = ltrim($path_alias, '/');
+
+  if (!empty($path_alias)) {
+    $variables['attributes']['class'][] = 'path-' . str_replace('/', '-', $path_alias);
+  }
+
+  // Add node type class if on a node page.
+  $node = \Drupal::routeMatch()->getParameter('node');
+  if ($node) {
+    $variables['attributes']['class'][] = 'node-type-' . $node->bundle();
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for page.html.twig.
+ */
+function baobab_theme_preprocess_page(&$variables) {
+  // Add site name and slogan as variables.
+  $site_config = \Drupal::config('system.site');
+  $variables['site_name'] = $site_config->get('name');
+  $variables['site_slogan'] = $site_config->get('slogan');
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK_alter() for paragraphs.
+ */
+function baobab_theme_theme_suggestions_paragraph_alter(array &$suggestions, array $variables) {
+  /** @var \Drupal\paragraphs\Entity\Paragraph $paragraph */
+  $paragraph = $variables['elements']['#paragraph'];
+  $parent = $paragraph->getParentEntity();
+
+  // Add suggestion based on parent entity type and bundle.
+  if ($parent) {
+    $suggestions[] = 'paragraph__' . $paragraph->bundle() . '__' . $parent->getEntityTypeId();
+    $suggestions[] = 'paragraph__' . $paragraph->bundle() . '__' . $parent->getEntityTypeId() . '__' . $parent->bundle();
+  }
+
+  // Add suggestion based on view mode.
+  $view_mode = $variables['elements']['#view_mode'];
+  $suggestions[] = 'paragraph__' . $paragraph->bundle() . '__' . $view_mode;
+}
+
+/**
+ * Implements hook_preprocess_field() for link fields.
+ */
+function baobab_theme_preprocess_field(&$variables) {
+  // Style CTA buttons specifically.
+  if ($variables['field_name'] === 'field_card_cta_link') {
+    foreach ($variables['items'] as &$item) {
+      // Add Tailwind button classes to CTA links.
+      if (isset($item['content']['#options']['attributes']['class'])) {
+        $item['content']['#options']['attributes']['class'][] = 'btn';
+        $item['content']['#options']['attributes']['class'][] = 'btn-primary';
+        $item['content']['#options']['attributes']['class'][] = 'inline-block';
+        $item['content']['#options']['attributes']['class'][] = 'mt-4';
+      }
+      else {
+        $item['content']['#options']['attributes']['class'] = ['btn', 'btn-primary', 'inline-block', 'mt-4'];
+      }
+
+      // Add Alpine.js click tracking example.
+      $item['content']['#options']['attributes']['@click'] = '$dispatch(\'card-cta-clicked\', { url: \'' . ($item['content']['#url']->toString() ?? '') . '\' })';
+    }
+  }
+}
+
+/**
+ * Implements hook_page_attachments_alter().
+ */
+function baobab_theme_page_attachments_alter(array &$attachments) {
+  // Add meta tags for better SEO and social sharing.
+  $theme_path = \Drupal::service('extension.list.theme')->getPath('baobab_theme');
+
+  // Add theme version as a meta tag (for cache busting in production).
+  $attachments['#attached']['html_head'][] = [
+    [
+      '#tag' => 'meta',
+      '#attributes' => [
+        'name' => 'theme-version',
+        'content' => '1.0.0',
+      ],
+    ],
+    'theme_version',
+  ];
+}

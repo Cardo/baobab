@@ -1,0 +1,19 @@
+name: Baobab Theme
+type: theme
+description: 'A custom Drupal theme built with TailwindCSS and AlpineJS'
+core_version_requirement: ^10 || ^11
+base theme: false
+
+libraries:
+  - baobab_theme/global
+
+regions:
+  header: Header
+  primary_menu: 'Primary menu'
+  secondary_menu: 'Secondary menu'
+  breadcrumb: Breadcrumb
+  help: Help
+  content: Content
+  sidebar_first: 'Left sidebar'
+  sidebar_second: 'Right sidebar'
+  footer: Footer
